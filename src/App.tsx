@@ -36,8 +36,35 @@ export default function App() {
       email: emailRef.current.value,
     };
 
-    const resp = await api.post("/customer", data);
-    setCustomers((allCustomers) => [...allCustomers, resp.data]);
+    try {
+      const resp = await api.post("/customer", data);
+
+      if (resp.status === 200) {
+        setCustomers((allCustomers) => [...allCustomers, resp.data]);
+
+        nameRef.current.value = "";
+        emailRef.current.value = "";
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function costumerDelete(id: string) {
+    try {
+      const rest = await api.delete("/customer", {
+        params: {
+          id: id,
+        },
+      });
+
+      if (rest.status === 200) {
+        const all = customers.filter((x) => x.id !== id);
+        setCustomers(all);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return (
@@ -123,7 +150,10 @@ export default function App() {
                     )}
                   </td>
                   <td className="py-3 font-light text-gray-200 text-right">
-                    <button className="border-blue-950 bg-blue-950/20 p-3 rounded-full transition-all hover:bg-blue-950/30 active:bg-blue-950/50">
+                    <button
+                      className="border-blue-950 bg-blue-950/20 p-3 rounded-full transition-all hover:bg-blue-950/30 active:bg-blue-950/50"
+                      onClick={() => costumerDelete(customer.id)}
+                    >
                       <FiTrash size={15} color="#fff" />
                     </button>
                   </td>
