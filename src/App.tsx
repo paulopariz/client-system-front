@@ -1,6 +1,30 @@
 import { FiTrash } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { api } from "./services/api";
+import moment from "moment";
+
+interface CustomerProps {
+  id: string;
+  name: string;
+  email: string;
+  status: boolean;
+  created_at: string;
+}
 
 export default function App() {
+  const [customers, setCustomers] = useState<CustomerProps[]>([]);
+
+  useEffect(() => {
+    loadCostumers();
+  }, []);
+
+  async function loadCostumers() {
+    const resp = await api.get("/customers");
+    if (resp.status === 200) {
+      setCustomers(resp.data);
+    }
+  }
+
   return (
     <div className="bg-blue-primary w-screen h-screen">
       <main className=" max-w-4xl m-auto px-6 h-36">
@@ -56,29 +80,38 @@ export default function App() {
               </tr>
             </thead>
             <tbody>
-              <tr className="bg-dark-secondary/5 text-white-secondary transition-all hover:scale-[0.995]">
-                <td>
-                  <div className=" h-6 w-6 rounded-full border border-blue-950 bg-blue-950/20 uppercase flex items-center justify-center p-5 text-sm">
-                    p
-                  </div>
-                </td>
-                <td className="py-3 font-light text-gray-200">Paulo Pariz</td>
-                <td className="py-3 font-light text-gray-200">
-                  paulo@gmail.com
-                </td>
-                <td className="py-6 font-light text-gray-200 text-center flex gap-2 items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <p>Ativo</p>
-                </td>
-                <td className="py-3 font-light text-gray-200 text-center">
-                  01/01/2024
-                </td>
-                <td className="py-3 font-light text-gray-200 text-right">
-                  <button className="border-blue-950 bg-blue-950/20 p-3 rounded-full transition-all hover:bg-blue-950/30 active:bg-blue-950/50">
-                    <FiTrash size={15} color="#fff" />
-                  </button>
-                </td>
-              </tr>
+              {customers.map((customer) => (
+                <tr
+                  key={customer.id}
+                  className="bg-dark-secondary/5 text-white-secondary transition-all hover:scale-[0.995]"
+                >
+                  <td>
+                    <div className=" h-6 w-6 rounded-full border border-blue-950 bg-blue-950/20 uppercase flex items-center justify-center p-5 text-sm">
+                      p
+                    </div>
+                  </td>
+                  <td className="py-3 font-light text-gray-200">
+                    {customer.name}
+                  </td>
+                  <td className="py-3 font-light text-gray-200">
+                    {customer.email}
+                  </td>
+                  <td className="py-6 font-light text-gray-200 text-center flex gap-2 items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <p>{customer.status ? "Ativo" : "Inativo"}</p>
+                  </td>
+                  <td className="py-3 font-light text-gray-200 text-center">
+                    {moment(customer.created_at).format(
+                      "DD/MM/YYYY [às] HH:mm"
+                    )}
+                  </td>
+                  <td className="py-3 font-light text-gray-200 text-right">
+                    <button className="border-blue-950 bg-blue-950/20 p-3 rounded-full transition-all hover:bg-blue-950/30 active:bg-blue-950/50">
+                      <FiTrash size={15} color="#fff" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </section>
