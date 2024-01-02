@@ -2,6 +2,8 @@ import { FiTrash } from "react-icons/fi";
 import { useEffect, useState, useRef, FormEvent } from "react";
 import { api } from "./services/api";
 import moment from "moment";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface CustomerProps {
   id: string;
@@ -16,15 +18,12 @@ export default function App() {
   const nameRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    loadCostumers();
-  }, []);
-
   async function loadCostumers() {
     const resp = await api.get("/customers");
-    if (resp.status === 200) {
-      setCustomers(resp.data);
+    if (resp.status !== 200) {
+      return toast.info("Houve um erro no servidor, tente novamente!");
     }
+    setCustomers(resp.data);
   }
 
   async function sendData(event: FormEvent) {
@@ -44,9 +43,11 @@ export default function App() {
 
         nameRef.current.value = "";
         emailRef.current.value = "";
+        toast.success("Cliente cadastrado com sucesso!");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Erro ao cadastrar cliente!");
     }
   }
 
@@ -61,14 +62,35 @@ export default function App() {
       if (rest.status === 200) {
         const all = customers.filter((x) => x.id !== id);
         setCustomers(all);
+        toast.success("Cliente deletado com sucesso!");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Erro ao deletar cliente!");
     }
   }
 
+  useEffect(() => {
+    loadCostumers();
+  }, []);
+
   return (
     <div className="bg-blue-primary">
+      <div>
+        {/* Outros componentes aqui */}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover={false}
+          theme="dark"
+        />
+      </div>
       <main className=" max-w-4xl m-auto px-6 h-36">
         <header className="pt-14 flex items-center gap-3">
           <div className="bg-green-500 w-2 h-2 rotate-45 bg-secondary"></div>
@@ -131,7 +153,7 @@ export default function App() {
                 >
                   <td>
                     <div className=" h-6 w-6 rounded-full border border-blue-950 bg-blue-950/20 uppercase flex items-center justify-center p-5 text-sm">
-                      p
+                      {customer.name.charAt(0)}
                     </div>
                   </td>
                   <td className="py-3 font-light text-gray-200">
