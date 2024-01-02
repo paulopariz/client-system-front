@@ -1,5 +1,5 @@
 import { FiTrash } from "react-icons/fi";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, FormEvent } from "react";
 import { api } from "./services/api";
 import moment from "moment";
 
@@ -13,6 +13,8 @@ interface CustomerProps {
 
 export default function App() {
   const [customers, setCustomers] = useState<CustomerProps[]>([]);
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  const emailRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     loadCostumers();
@@ -25,18 +27,32 @@ export default function App() {
     }
   }
 
+  async function sendData(event: FormEvent) {
+    event.preventDefault();
+    if (!nameRef.current?.value || !emailRef.current?.value) return;
+
+    var data = {
+      name: nameRef.current.value,
+      email: emailRef.current.value,
+    };
+
+    const resp = await api.post("/customer", data);
+    setCustomers((allCustomers) => [...allCustomers, resp.data]);
+  }
+
   return (
-    <div className="bg-blue-primary w-screen h-screen">
+    <div className="bg-blue-primary">
       <main className=" max-w-4xl m-auto px-6 h-36">
         <header className="pt-14 flex items-center gap-3">
           <div className="bg-green-500 w-2 h-2 rotate-45 bg-secondary"></div>
           <h1 className="text-3xl  font-semibold tracking-wide">Cadastro</h1>
         </header>
 
-        <form className="mt-10 grid gap-8">
+        <form className="mt-10 grid gap-8" onSubmit={sendData}>
           <div className="grid gap-2">
             <label className=" font-medium">Nome</label>
             <input
+              ref={nameRef}
               type="text"
               placeholder="Nome do cliente"
               className="py-3 px-4 rounded-full outline-none bg-transparent border-blue-950 border  focus:border-blue-900 hover:border-blue-900 hover:bg-blue-950/20 focus:bg-blue-950/20 transition-all placeholder:transition-all placeholder:text-gray-300 font-light text-sm focus:placeholder:pl-2 focus:placeholder:text-gray-400"
@@ -46,6 +62,7 @@ export default function App() {
           <div className="grid gap-2">
             <label className=" font-medium">E-mail</label>
             <input
+              ref={emailRef}
               type="email"
               placeholder="E-mail do cliente"
               className="py-3 px-4 rounded-full outline-none bg-transparent border-blue-950 border  focus:border-blue-900 hover:border-blue-900 hover:bg-blue-950/20 focus:bg-blue-950/20 transition-all placeholder:transition-all placeholder:text-gray-300 font-light text-sm focus:placeholder:pl-2 focus:placeholder:text-gray-400"
