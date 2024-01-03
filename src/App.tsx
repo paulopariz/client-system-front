@@ -17,6 +17,11 @@ export default function App() {
   const [customers, setCustomers] = useState<CustomerProps[]>([]);
   const nameRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
+  const [status, setStatus] = useState<string>("");
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+  };
 
   async function loadCostumers() {
     const resp = await api.get("/customers");
@@ -28,11 +33,14 @@ export default function App() {
 
   async function sendData(event: FormEvent) {
     event.preventDefault();
-    if (!nameRef.current?.value || !emailRef.current?.value) return;
+
+    if (!nameRef.current?.value || !emailRef.current?.value || status === "")
+      return toast.info("Preencha todos os campos!");
 
     var data = {
       name: nameRef.current.value,
       email: emailRef.current.value,
+      status: status === "ativo" ? true : false,
     };
 
     try {
@@ -40,9 +48,11 @@ export default function App() {
 
       if (resp.status === 200) {
         setCustomers((allCustomers) => [...allCustomers, resp.data]);
+        console.log("resp", resp);
 
         nameRef.current.value = "";
         emailRef.current.value = "";
+        setStatus("ativo");
         toast.success("Cliente cadastrado com sucesso!");
       }
     } catch (error) {
@@ -77,7 +87,6 @@ export default function App() {
   return (
     <div className="bg-blue-primary">
       <div>
-        {/* Outros componentes aqui */}
         <ToastContainer
           position="top-right"
           autoClose={3000}
@@ -93,7 +102,7 @@ export default function App() {
       </div>
       <main className=" max-w-4xl m-auto px-6 h-36">
         <header className="pt-14 flex items-center gap-3">
-          <div className="bg-green-500 w-2 h-2 rotate-45 bg-secondary"></div>
+          <div className="bg-blue-900 w-2 h-2 rotate-45 bg-secondary"></div>
           <h1 className="text-3xl  font-semibold tracking-wide">Cadastro</h1>
         </header>
 
@@ -104,7 +113,7 @@ export default function App() {
               ref={nameRef}
               type="text"
               placeholder="Nome do cliente"
-              className="py-3 px-4 rounded-full outline-none bg-transparent border-blue-950 border  focus:border-blue-900 hover:border-blue-900 hover:bg-blue-950/20 focus:bg-blue-950/20 transition-all placeholder:transition-all placeholder:text-gray-300 font-light text-sm focus:placeholder:pl-2 focus:placeholder:text-gray-400"
+              className="py-3.5 px-6 rounded-full outline-none bg-transparent border-blue-950 border  focus:border-blue-900 hover:border-blue-900 hover:bg-blue-950/20 focus:bg-blue-950/20 transition-all placeholder:transition-all placeholder:text-gray-300 font-light text-sm focus:placeholder:pl-2 focus:placeholder:text-gray-400"
             />
           </div>
 
@@ -114,8 +123,70 @@ export default function App() {
               ref={emailRef}
               type="email"
               placeholder="E-mail do cliente"
-              className="py-3 px-4 rounded-full outline-none bg-transparent border-blue-950 border  focus:border-blue-900 hover:border-blue-900 hover:bg-blue-950/20 focus:bg-blue-950/20 transition-all placeholder:transition-all placeholder:text-gray-300 font-light text-sm focus:placeholder:pl-2 focus:placeholder:text-gray-400"
+              className="py-3.5 px-6 rounded-full outline-none bg-transparent border-blue-950 border  focus:border-blue-900 hover:border-blue-900 hover:bg-blue-950/20 focus:bg-blue-950/20 transition-all placeholder:transition-all placeholder:text-gray-300 font-light text-sm focus:placeholder:pl-2 focus:placeholder:text-gray-400"
             />
+          </div>
+
+          <div className="grid gap-2">
+            <label className=" font-medium">E-mail</label>
+            <div className="flex gap-10">
+              <div className="inline-flex items-center">
+                <label
+                  className="relative flex items-center p-3 rounded-full cursor-pointer"
+                  htmlFor="html"
+                >
+                  <input
+                    name="type"
+                    type="radio"
+                    value="ativo"
+                    checked={status === "ativo"}
+                    onChange={() => handleStatusChange("ativo")}
+                    className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-full border border-blue-gray-200 text-blue-900 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-blue-900 checked:before:bg-blue-900 hover:before:opacity-10 border-gray-400"
+                  />
+                  <span className="absolute text-blue-900 transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3.5 w-3.5"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                    >
+                      <circle data-name="ellipse" cx="8" cy="8" r="8"></circle>
+                    </svg>
+                  </span>
+                </label>
+                <label
+                  className="mt-px font-light  cursor-pointer select-none"
+                  htmlFor="html"
+                >
+                  Ativo
+                </label>
+              </div>
+              <div className="inline-flex items-center">
+                <label className="relative flex items-center p-3 rounded-full cursor-pointer">
+                  <input
+                    name="type"
+                    type="radio"
+                    value="inativo"
+                    checked={status === "inativo"}
+                    onChange={() => handleStatusChange("inativo")}
+                    className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-full border border-blue-gray-200 text-blue-900 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-blue-900 checked:before:bg-blue-900 hover:before:opacity-10  border-gray-400"
+                  />
+                  <span className="absolute text-blue-900 transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3.5 w-3.5"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                    >
+                      <circle data-name="ellipse" cx="8" cy="8" r="8"></circle>
+                    </svg>
+                  </span>
+                </label>
+                <label className="mt-px font-light  cursor-pointer select-none">
+                  Inativo
+                </label>
+              </div>
+            </div>
           </div>
           <input
             type="submit"
@@ -126,7 +197,7 @@ export default function App() {
 
         <section>
           <header className="pt-14 flex items-center gap-3">
-            <div className="bg-green-500 w-2 h-2 rotate-45 bg-secondary"></div>
+            <div className="bg-blue-900 w-2 h-2 rotate-45 bg-secondary"></div>
             <h1 className="text-3xl  font-semibold tracking-wide">
               Clientes cadastrados
             </h1>
@@ -146,41 +217,51 @@ export default function App() {
               </tr>
             </thead>
             <tbody>
-              {customers.map((customer) => (
-                <tr
-                  key={customer.id}
-                  className="bg-dark-secondary/5 text-white-secondary transition-all hover:scale-[0.995]"
-                >
-                  <td>
-                    <div className=" h-6 w-6 rounded-full border border-blue-950 bg-blue-950/20 uppercase flex items-center justify-center p-5 text-sm">
-                      {customer.name.charAt(0)}
-                    </div>
-                  </td>
-                  <td className="py-3 font-light text-gray-200">
-                    {customer.name}
-                  </td>
-                  <td className="py-3 font-light text-gray-200">
-                    {customer.email}
-                  </td>
-                  <td className="py-6 font-light text-gray-200 text-center flex gap-2 items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <p>{customer.status ? "Ativo" : "Inativo"}</p>
-                  </td>
-                  <td className="py-3 font-light text-gray-200 text-center">
-                    {moment(customer.created_at).format(
-                      "DD/MM/YYYY [às] HH:mm"
-                    )}
-                  </td>
-                  <td className="py-3 font-light text-gray-200 text-right">
-                    <button
-                      className="border-blue-950 bg-blue-950/20 p-3 rounded-full transition-all hover:bg-blue-950/30 active:bg-blue-950/50"
-                      onClick={() => costumerDelete(customer.id)}
-                    >
-                      <FiTrash size={15} color="#fff" />
-                    </button>
-                  </td>
+              {customers.length > 0 ? (
+                customers.map((customer) => (
+                  <tr
+                    key={customer.id}
+                    className="bg-dark-secondary/5 text-white-secondary transition-all hover:scale-[0.995]"
+                  >
+                    <td>
+                      <div className=" h-6 w-6 rounded-full border border-blue-950 bg-blue-950/20 uppercase flex items-center justify-center p-5 text-sm">
+                        {customer.name.charAt(0)}
+                      </div>
+                    </td>
+                    <td className="py-3 font-light text-gray-200 max-w-24 overflow-hidden text-ellipsis pr-1">
+                      {customer.name}
+                    </td>
+                    <td className="py-3 font-light text-gray-200 max-w-24 overflow-hidden text-ellipsis pr-1">
+                      {customer.email}
+                    </td>
+                    <td className="py-6 font-light text-gray-200 text-center flex gap-2 items-center justify-center">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          customer.status ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      ></div>
+                      <p>{customer.status === true ? "Ativo" : "Inativo"}</p>
+                    </td>
+                    <td className="py-3 font-light text-gray-200 text-center">
+                      {moment(customer.created_at).format(
+                        "DD/MM/YYYY [às] HH:mm"
+                      )}
+                    </td>
+                    <td className="py-3 font-light text-gray-200 text-right">
+                      <button
+                        className="border-blue-950 bg-blue-950/20 p-3 rounded-full transition-all hover:bg-blue-950/30 active:bg-blue-950/50"
+                        onClick={() => costumerDelete(customer.id)}
+                      >
+                        <FiTrash size={15} color="#fff" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr className="mt-20 absolute left-1/2 -translate-x-1/2">
+                  <td className="text-gray-300">Carregando...</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </section>

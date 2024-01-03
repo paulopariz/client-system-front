@@ -10,6 +10,18 @@ body {
     color: #fff;
     background-color: #08031A;
 }
+body::-webkit-scrollbar {
+    width: 5px;               
+  }
+  
+  body::-webkit-scrollbar-track {
+    background: transparent
+  }
+  
+  body::-webkit-scrollbar-thumb {
+    background-color: #292E4B;    
+    border-radius: 20px;       
+  }
 
 .Toastify__toast{
     border: 1px solid #1c0d4e !important;
