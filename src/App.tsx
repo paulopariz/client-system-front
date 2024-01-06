@@ -1,4 +1,4 @@
-import { FiTrash } from "react-icons/fi";
+import { FiTrash, FiEdit3 } from "react-icons/fi";
 import { useEffect, useState, useRef, FormEvent } from "react";
 import { api } from "./services/api";
 import moment from "moment";
@@ -18,10 +18,21 @@ export default function App() {
   const nameRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const [status, setStatus] = useState<string>("");
+  const isEdit = useRef<boolean>(false);
+  const idEdit = useRef<string>("");
 
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
   };
+
+  async function closeEdit() {
+    if (nameRef.current && emailRef.current) {
+      nameRef.current.value = "";
+      emailRef.current.value = "";
+      setStatus("");
+      isEdit.current = false;
+    }
+  }
 
   async function loadCostumers() {
     const resp = await api.get("/customers");
@@ -48,11 +59,10 @@ export default function App() {
 
       if (resp.status === 200) {
         setCustomers((allCustomers) => [...allCustomers, resp.data]);
-        console.log("resp", resp);
 
         nameRef.current.value = "";
         emailRef.current.value = "";
-        setStatus("ativo");
+        setStatus("");
         toast.success("Cliente cadastrado com sucesso!");
       }
     } catch (error) {
@@ -61,15 +71,74 @@ export default function App() {
     }
   }
 
+  async function updateData(event: FormEvent) {
+    event.preventDefault();
+
+    if (!nameRef.current?.value || !emailRef.current?.value || status === "")
+      return toast.info("Preencha todos os campos!");
+
+    var data = {
+      name: nameRef.current.value,
+      email: emailRef.current.value,
+      status: status === "ativo" ? true : false,
+    };
+    try {
+      const resp = await api.put(`/customer/${idEdit.current}`, data);
+
+      if (resp.status === 200) {
+        setCustomers((allCustomers) => {
+          const index = allCustomers.findIndex(
+            (customer) => customer.id === resp.data.id
+          );
+
+          if (index !== -1) {
+            const updatedCustomers = [...allCustomers];
+            updatedCustomers[index] = resp.data;
+            console.log("updatedCustomers", updatedCustomers);
+
+            return updatedCustomers;
+          } else {
+            return allCustomers;
+          }
+        });
+
+        //limpa os dados
+        nameRef.current.value = "";
+        emailRef.current.value = "";
+        setStatus("");
+        isEdit.current = false;
+        toast.success("Dados do cliente atualizados com sucesso!");
+      }
+    } catch (error) {
+      toast.error("Erro ao atualizar cliente!");
+    }
+  }
+
+  async function isUpdate(data: CustomerProps) {
+    try {
+      if (data && nameRef.current && emailRef.current) {
+        nameRef.current.value = data.name;
+        emailRef.current.value = data.email;
+        setStatus(data.status === true ? "ativo" : "inativo");
+
+        idEdit.current = data.id;
+
+        isEdit.current = true;
+      }
+    } catch (error) {
+      toast.error("Houve algum erro, tente novamente!");
+    }
+  }
+
   async function costumerDelete(id: string) {
     try {
-      const rest = await api.delete("/customer", {
+      const resp = await api.delete("/customer", {
         params: {
           id: id,
         },
       });
 
-      if (rest.status === 200) {
+      if (resp.status === 200) {
         const all = customers.filter((x) => x.id !== id);
         setCustomers(all);
         toast.success("Cliente deletado com sucesso!");
@@ -106,7 +175,10 @@ export default function App() {
           <h1 className="text-3xl  font-semibold tracking-wide">Cadastro</h1>
         </header>
 
-        <form className="mt-10 grid gap-8" onSubmit={sendData}>
+        <form
+          className="mt-10 grid gap-8"
+          onSubmit={isEdit.current === false ? sendData : updateData}
+        >
           <div className="grid gap-2">
             <label className=" font-medium">Nome</label>
             <input
@@ -188,12 +260,29 @@ export default function App() {
               </div>
             </div>
           </div>
-          <input
-            type="submit"
-            value="Cadastrar"
-            className=" bg-blue-950 w-full py-3 px-4 rounded-full tracking-wide transition-all hover:border-blue-900 hover:bg-blue-950/20 active:bg-blue-950/50 border border-transparent cursor-pointer hover:scale-[0.995]"
-          />
+
+          {!isEdit.current === true ? (
+            <input
+              type="submit"
+              value="Cadastrar"
+              className=" bg-blue-950 w-full py-3 px-4 rounded-full tracking-wide transition-all hover:border-blue-900 hover:bg-blue-950/20 active:bg-blue-950/50 border border-transparent cursor-pointer hover:scale-[0.995]"
+            />
+          ) : (
+            <input
+              type="submit"
+              value="Atualizar dados"
+              className=" bg-blue-950 w-full py-3 px-4 rounded-full tracking-wide transition-all hover:border-blue-900 hover:bg-blue-950/20 active:bg-blue-950/50 border border-transparent cursor-pointer hover:scale-[0.995]"
+            />
+          )}
         </form>
+        {isEdit.current && (
+          <button
+            onClick={closeEdit}
+            className=" bg-red-950 w-full mt-3 py-3 px-4 rounded-full tracking-wide transition-all hover:border-red-900 hover:bg-red-950/20 active:bg-red-950/50 border border-transparent cursor-pointer hover:scale-[0.995]"
+          >
+            Cancelar
+          </button>
+        )}
 
         <section>
           <header className="pt-14 flex items-center gap-3">
@@ -247,7 +336,14 @@ export default function App() {
                         "DD/MM/YYYY [às] HH:mm"
                       )}
                     </td>
-                    <td className="py-3 font-light text-gray-200 text-right">
+                    <td className="py-3 flex gap-2 items-center justify-end font-light text-gray-200 text-right">
+                      <button
+                        className="border-blue-950 bg-blue-950/20 p-3 rounded-full transition-all hover:bg-blue-950/30 active:bg-blue-950/50"
+                        onClick={() => isUpdate(customer)}
+                      >
+                        <FiEdit3 size={15} color="#fff" />
+                      </button>
+
                       <button
                         className="border-blue-950 bg-blue-950/20 p-3 rounded-full transition-all hover:bg-blue-950/30 active:bg-blue-950/50"
                         onClick={() => costumerDelete(customer.id)}
