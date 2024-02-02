@@ -2,7 +2,9 @@ import { FiTrash, FiEdit3 } from "react-icons/fi";
 import { useEffect, useState, useRef, FormEvent } from "react";
 import { api } from "./services/api";
 import moment from "moment";
-import { ToastContainer, toast } from "react-toastify";
+// import { ToastContainer, toast } from "react-toastify";
+import { Toaster, toast } from "sonner";
+
 import "react-toastify/dist/ReactToastify.css";
 
 interface CustomerProps {
@@ -48,7 +50,7 @@ export default function App() {
     if (!nameRef.current?.value || !emailRef.current?.value || status === "")
       return toast.info("Preencha todos os campos!");
 
-    var data = {
+    const data = {
       name: nameRef.current.value,
       email: emailRef.current.value,
       status: status === "ativo" ? true : false,
@@ -77,7 +79,7 @@ export default function App() {
     if (!nameRef.current?.value || !emailRef.current?.value || status === "")
       return toast.info("Preencha todos os campos!");
 
-    var data = {
+    const data = {
       name: nameRef.current.value,
       email: emailRef.current.value,
       status: status === "ativo" ? true : false,
@@ -156,18 +158,7 @@ export default function App() {
   return (
     <div className="bg-blue-primary">
       <div>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover={false}
-          theme="dark"
-        />
+        <Toaster position="top-right" richColors theme="dark" />
       </div>
       <main className=" max-w-4xl m-auto px-6 h-36">
         <header className="pt-14 flex items-center gap-3">
@@ -200,7 +191,7 @@ export default function App() {
           </div>
 
           <div className="grid gap-2">
-            <label className=" font-medium">E-mail</label>
+            <label className=" font-medium">Status</label>
             <div className="flex gap-10">
               <div className="inline-flex items-center">
                 <label
