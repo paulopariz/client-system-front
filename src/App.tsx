@@ -346,7 +346,7 @@ export default function App() {
                 ))
               ) : (
                 <tr className="mt-20 absolute left-1/2 -translate-x-1/2">
-                  <td className="text-gray-300">Carregando...</td>
+                  <td className="text-gray-300">Nenhum cliente cadastrado!</td>
                 </tr>
               )}
             </tbody>
