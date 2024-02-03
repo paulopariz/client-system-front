@@ -59,7 +59,7 @@ export default function App() {
     try {
       const resp = await api.post("/customer", data);
 
-      if (resp.status === 200) {
+      if (resp.status === 201) {
         setCustomers((allCustomers) => [...allCustomers, resp.data]);
 
         nameRef.current.value = "";
